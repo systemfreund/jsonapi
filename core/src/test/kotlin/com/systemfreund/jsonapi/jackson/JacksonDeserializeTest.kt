@@ -1,22 +1,33 @@
-package com.systemfreund.jackson
+package com.systemfreund.jsonapi.jackson
 
 import com.fasterxml.jackson.module.kotlin.readValue
-import com.systemfreund.*
-import com.systemfreund.Document.Companion.ResourceObject
-import com.systemfreund.Document.Companion.ResourceObjects
-import com.systemfreund.JsonApiObject.FalseValue
-import com.systemfreund.JsonApiObject.JsArrayValue
-import com.systemfreund.JsonApiObject.JsObjectValue
-import com.systemfreund.JsonApiObject.NullValue
-import com.systemfreund.JsonApiObject.NumberValue
-import com.systemfreund.JsonApiObject.StringValue
-import com.systemfreund.JsonApiObject.TrueValue
+import com.systemfreund.jsonapi.Attribute
+import com.systemfreund.jsonapi.Document
+import com.systemfreund.jsonapi.Document.Companion.ResourceObject
+import com.systemfreund.jsonapi.Document.Companion.ResourceObjects
+import com.systemfreund.jsonapi.Error
+import com.systemfreund.jsonapi.ErrorSource
+import com.systemfreund.jsonapi.JsonApiEntry
+import com.systemfreund.jsonapi.JsonApiJackson
+import com.systemfreund.jsonapi.JsonApiObject.FalseValue
+import com.systemfreund.jsonapi.JsonApiObject.JsArrayValue
+import com.systemfreund.jsonapi.JsonApiObject.JsObjectValue
+import com.systemfreund.jsonapi.JsonApiObject.NullValue
+import com.systemfreund.jsonapi.JsonApiObject.NumberValue
+import com.systemfreund.jsonapi.JsonApiObject.StringValue
+import com.systemfreund.jsonapi.JsonApiObject.TrueValue
+import com.systemfreund.jsonapi.Link
+import com.systemfreund.jsonapi.Relationship
+import com.systemfreund.jsonapi.ResourceIdentifier
+import com.systemfreund.jsonapi.ResourceLinkage.EmptyToOneRelationship
+import com.systemfreund.jsonapi.ResourceLinkage.ToManyRelationship
+import com.systemfreund.jsonapi.ResourceLinkage.ToOneRelationship
 import org.junit.Test
 import java.math.BigDecimal
 
 class JacksonDeserializeTest {
 
-    val mapper = JsonApiJackson.createMapper()
+    private val mapper = JsonApiJackson.createMapper()
 
     private inline fun <reified T : Any> String.assertEquals(expected: T) = kotlin.test.assertEquals(expected, mapper.readValue(this))
 
@@ -175,8 +186,8 @@ class JacksonDeserializeTest {
         """.assertEquals(Document(
                 data = ResourceObject("1234", "model"),
                 meta = mapOf(
-                        "k1" to JsonApiObject.StringValue("v1"),
-                        "k2" to JsonApiObject.NumberValue(BigDecimal.valueOf(1234))
+                        "k1" to StringValue("v1"),
+                        "k2" to NumberValue(BigDecimal.valueOf(1234))
                 )))
     }
 
@@ -278,8 +289,8 @@ class JacksonDeserializeTest {
         """.assertEquals(Document(
                 data = ResourceObject("1234", "model",
                         meta = mapOf(
-                                "k1" to JsonApiObject.StringValue("v1"),
-                                "k2" to JsonApiObject.NumberValue(BigDecimal.valueOf(1234))
+                                "k1" to StringValue("v1"),
+                                "k2" to NumberValue(BigDecimal.valueOf(1234))
                         ))))
     }
 
@@ -457,7 +468,7 @@ class JacksonDeserializeTest {
             "relationships": null
           }
         }
-        """.assertEquals(Document(ResourceObject(type = "model", relationships = null)))
+        """.assertEquals(Document(ResourceObject(type = "model", relationships = emptyMap())))
 
         """
         {
@@ -473,7 +484,7 @@ class JacksonDeserializeTest {
           "data": {
             "type": "model",
             "relationships": {
-              "rel1": {
+              "with-to-one-linkage": {
                 "links": {
                   "self": "http://localhost/rel1"
                 },
@@ -482,7 +493,7 @@ class JacksonDeserializeTest {
                   "type" : "model"
                 }
               },
-              "rel2": {
+              "with-to-many-linkage": {
                 "data": [
                   {
                     "id" : "1",
@@ -497,26 +508,29 @@ class JacksonDeserializeTest {
                   "m1": false
                 }
               },
-              "rel3": {
+              "with-empty-to-one-linkage": {
                 "data": null
               },
-              "rel4": {
+              "with-empty-to-many-linkage": {
                 "data": []
+              },
+              "with-absent-linkage": {
               }
             }
           }
         }
         """.assertEquals(Document(ResourceObject(type = "model", relationships = mapOf(
-                "rel1" to Relationship(
+                "with-to-one-linkage" to Relationship(
                         links = listOf(Link.self("http://localhost/rel1")),
-                        data = ResourceObject("1234", "model")),
-                "rel2" to Relationship(
-                        data = ResourceObjects(listOf(
-                                ResourceObject("1", "model"),
-                                ResourceObject("2", "model"))),
+                        data = ToOneRelationship(ResourceIdentifier("1234", "model"))),
+                "with-to-many-linkage" to Relationship(
+                        data = ToManyRelationship(listOf(
+                                ResourceIdentifier("1", "model"),
+                                ResourceIdentifier("2", "model"))),
                         meta = mapOf("m1" to FalseValue)),
-                "rel3" to Relationship(data = null),
-                "rel4" to Relationship(data = ResourceObjects(emptyList()))
+                "with-empty-to-one-linkage" to Relationship(data = EmptyToOneRelationship),
+                "with-empty-to-many-linkage" to Relationship(data = ToManyRelationship()),
+                "with-absent-linkage" to Relationship(data = null)
         ))))
     }
 }

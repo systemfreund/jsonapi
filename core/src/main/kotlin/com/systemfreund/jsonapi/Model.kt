@@ -1,16 +1,23 @@
-package com.systemfreund
+package com.systemfreund.jsonapi
 
-import com.systemfreund.Document.Companion.Data
-import com.systemfreund.JsonApiObject.JsObjectValue
-import com.systemfreund.JsonApiObject.Value
+import com.systemfreund.jsonapi.Document.Companion.Data
+import com.systemfreund.jsonapi.JsonApiObject.JsObjectValue
+import com.systemfreund.jsonapi.JsonApiObject.Value
 import java.math.BigDecimal
+import java.util.*
 
 typealias Attributes = List<Attribute>
 typealias Relationships = Map<String, Relationship>
-typealias Links = Iterable<Link>
+typealias Links = Iterable<Link> // TODO refactor to Map<String, Link> ?
 typealias Meta = Map<String, Value>
 typealias Errors = List<Error>
 typealias JsonApiInfo = List<JsonApiEntry>
+
+/**
+ * Resource Identifier object.
+ * [https://jsonapi.org/format/#document-resource-identifier-objects]
+ */
+data class ResourceIdentifier(val id: String, val type: String, val meta: Meta? = null)
 
 data class Document(
         val data: Data? = null,
@@ -26,7 +33,7 @@ data class Document(
         data class ResourceObject(val id: String? = null,
                                   val type: String,
                                   val attributes: JsObjectValue? = null,
-                                  val relationships: Relationships? = null,
+                                  val relationships: Relationships = emptyMap(),
                                   val links: Links? = null,
                                   val meta: Meta? = null
         ) : Data
@@ -37,9 +44,33 @@ data class Document(
 
 data class Attribute(val name: String, val value: Value)
 
+// data absent
+
 data class Relationship(val links: Links? = null,
-                        val data: Data? = null,
+
+                        /**
+                         * The resource linkage.
+                         * [https://jsonapi.org/format/#document-resource-object-linkage]
+                         */
+                        val data: ResourceLinkage? = null,
+
                         val meta: Meta? = null)
+
+sealed class ResourceLinkage {
+    object EmptyToOneRelationship : ResourceLinkage() {
+        override val isEmpty = true
+    }
+
+    data class ToOneRelationship(val id: ResourceIdentifier) : ResourceLinkage() {
+        override val isEmpty = false
+    }
+
+    data class ToManyRelationship(val ids: List<ResourceIdentifier> = emptyList()) : ResourceLinkage() {
+        override val isEmpty = ids.isEmpty()
+    }
+
+    abstract val isEmpty: Boolean
+}
 
 data class Link(val name: String, val url: String, val meta: Meta?) {
     companion object {
@@ -52,7 +83,6 @@ data class Link(val name: String, val url: String, val meta: Meta?) {
         fun about(url: String, meta: Meta? = null) = Link("about", url, meta)
     }
 }
-
 
 data class Error(val id: String? = null,
                  val links: Links? = null,
