@@ -1,14 +1,12 @@
 package com.systemfreund.jsonapi
 
-import com.systemfreund.jsonapi.Document.Companion.Data
 import com.systemfreund.jsonapi.JsonApiObject.JsObjectValue
 import com.systemfreund.jsonapi.JsonApiObject.Value
 import java.math.BigDecimal
-import java.util.*
 
 typealias Attributes = List<Attribute>
 typealias Relationships = Map<String, Relationship>
-typealias Links = Iterable<Link> // TODO refactor to Map<String, Link> ?
+typealias Links = Map<String, Link>
 typealias Meta = Map<String, Value>
 typealias Errors = List<Error>
 typealias JsonApiInfo = List<JsonApiEntry>
@@ -72,17 +70,7 @@ sealed class ResourceLinkage {
     abstract val isEmpty: Boolean
 }
 
-data class Link(val name: String, val url: String, val meta: Meta?) {
-    companion object {
-        fun self(url: String, meta: Meta? = null) = Link("self", url, meta)
-        fun next(url: String, meta: Meta? = null) = Link("next", url, meta)
-        fun prev(url: String, meta: Meta? = null) = Link("prev", url, meta)
-        fun first(url: String, meta: Meta? = null) = Link("first", url, meta)
-        fun last(url: String, meta: Meta? = null) = Link("last", url, meta)
-        fun related(url: String, meta: Meta? = null) = Link("related", url, meta)
-        fun about(url: String, meta: Meta? = null) = Link("about", url, meta)
-    }
-}
+data class Link(val href: String, val meta: Meta? = null)
 
 data class Error(val id: String? = null,
                  val links: Links? = null,

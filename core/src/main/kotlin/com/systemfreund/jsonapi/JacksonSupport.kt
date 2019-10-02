@@ -114,7 +114,7 @@ class ResourceLinkageDeserializer : JsonDeserializer<ResourceLinkage>() {
         return when (parser.currentToken) {
             JsonToken.START_OBJECT -> ToOneRelationship(parser.readValueAs(ResourceIdentifier::class.java))
             JsonToken.START_ARRAY -> ToManyRelationship(handleArray(parser))
-            else -> context.reportInputMismatch(Data::class.java, "Unexpected token: ${parser.currentToken}")
+            else -> context.reportInputMismatch(ResourceLinkage::class.java, "Unexpected token: ${parser.currentToken}")
         }
     }
 }
@@ -159,27 +159,26 @@ class RelationshipsDeserializer : JsonDeserializer<Relationships>() {
 class LinksDeserializer : JsonDeserializer<Links>() {
     override fun deserialize(parser: JsonParser, context: DeserializationContext): Links {
         val links = parser.readValueAs(JsObjectValue::class.java)
-        return links.value.map {
-            when (it.value) {
-                is StringValue -> Link(it.name, it.value.value, meta = null)
+        return links.value.associate { attribute ->
+            attribute.name to when (attribute.value) {
+                is StringValue -> Link(attribute.value.value)
                 is JsObjectValue -> {
-                    val attributes = it.value.value
+                    val attributes = attribute.value.value
                     val href = getAttribute<StringValue>(attributes, context, "href")
-                            ?: context.reportInputMismatch(Link::class.java, "'href' attribute not found: ${it.value}")
+                            ?: context.reportInputMismatch(Link::class.java, "'href' attribute not found: ${attribute.value}")
                     val meta: Meta? = when (val metaObj = getAttribute<Value>(attributes, context, "meta")) {
                         is NullValue -> null
                         is JsObjectValue -> metaObj.value.fold(linkedMapOf(), { result, value ->
                             result[value.name] = value.value
                             return@fold result
                         })
-                        else -> context.reportInputMismatch(Link::class.java, "Unexpected object: $it")
+                        else -> context.reportInputMismatch(Link::class.java, "Unexpected object: ${attribute.value}")
                     }
 
-                    Link(it.name, href.value, meta)
+                    Link(href.value, meta)
                 }
-                else -> context.reportInputMismatch(Link::class.java, "Unexpected object: ${it.value}")
+                else -> context.reportInputMismatch(Link::class.java, "Unexpected object: ${attribute.value}")
             }
-
         }
     }
 }
@@ -196,7 +195,7 @@ private inline fun <reified T> getAttribute(attributes: Attributes, context: Des
     return attributes.find { name == it.name }?.let {
         when (it.value) {
             is T -> it.value
-            else -> context.reportInputMismatch(Link::class.java, "Unexpected object: ${it.value}")
+            else -> context.reportInputMismatch(T::class.java, "Unexpected object: ${it.value}")
         }
     }
 }

@@ -255,7 +255,7 @@ class JacksonDeserializeTest {
           }
         }
         """.assertEquals(Document(
-                data = ResourceObject(id = "1234", type = "model", links = emptyList())))
+                data = ResourceObject(id = "1234", type = "model", links = emptyMap())))
 
         """
         {
@@ -268,8 +268,8 @@ class JacksonDeserializeTest {
           }
         }
         """.assertEquals(Document(
-                data = ResourceObject(id = "1234", type = "model", links = listOf(
-                        Link.self("http://localhost")
+                data = ResourceObject(id = "1234", type = "model", links = mapOf(
+                        "self" to Link("http://localhost")
                 ))))
     }
 
@@ -338,7 +338,7 @@ class JacksonDeserializeTest {
                         detail = "Details",
                         source = ErrorSource("/data/attributes/field", "query"),
                         meta = mapOf("key" to StringValue("value")),
-                        links = listOf(Link.self("http://localhost")))
+                        links = mapOf("self" to Link("http://localhost")))
         )))
 
         """
@@ -354,7 +354,7 @@ class JacksonDeserializeTest {
         """.assertEquals(Document(errors = listOf(
                 Error(source = ErrorSource(),
                         meta = emptyMap(),
-                        links = listOf())
+                        links = emptyMap())
         )))
     }
 
@@ -370,7 +370,7 @@ class JacksonDeserializeTest {
         {
           "links": { }
         }
-        """.assertEquals(Document(links = emptyList()))
+        """.assertEquals(Document(links = emptyMap()))
 
         """
         {
@@ -393,11 +393,11 @@ class JacksonDeserializeTest {
             }
           }
         }
-        """.assertEquals(Document(links = listOf(
-                Link.self("http://localhost"),
-                Link.next("http://localhost/next"),
-                Link.prev("http://localhost/prev", meta = emptyMap()),
-                Link.about("http://localhost/about", meta = mapOf(
+        """.assertEquals(Document(links = mapOf(
+                "self" to Link("http://localhost"),
+                "next" to Link("http://localhost/next"),
+                "prev" to Link("http://localhost/prev", meta = emptyMap()),
+                "about" to Link("http://localhost/about", meta = mapOf(
                         "author" to StringValue("the author"),
                         "version" to NumberValue(BigDecimal.valueOf(1))
                 ))
@@ -521,7 +521,7 @@ class JacksonDeserializeTest {
         }
         """.assertEquals(Document(ResourceObject(type = "model", relationships = mapOf(
                 "with-to-one-linkage" to Relationship(
-                        links = listOf(Link.self("http://localhost/rel1")),
+                        links = mapOf("self" to Link("http://localhost/rel1")),
                         data = ToOneRelationship(ResourceIdentifier("1234", "model"))),
                 "with-to-many-linkage" to Relationship(
                         data = ToManyRelationship(listOf(
