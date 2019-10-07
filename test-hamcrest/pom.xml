@@ -7,20 +7,33 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.systemfreund.jsonapi</groupId>
-    <artifactId>test</artifactId>
+    <artifactId>jsonapi-test-hamcrest</artifactId>
     <packaging>jar</packaging>
 
     <dependencies>
         <dependency>
+            <groupId>com.systemfreund.jsonapi</groupId>
+            <artifactId>jsonapi-core</artifactId>
+            <version>0.2-SNAPSHOT</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.hamcrest</groupId>
+            <artifactId>hamcrest</artifactId>
+            <version>${hamcrest.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.hamcrest</groupId>
+            <artifactId>hamcrest-library</artifactId>
+            <version>${hamcrest.version}</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
             <groupId>org.jetbrains.kotlin</groupId>
             <artifactId>kotlin-test-junit</artifactId>
             <version>${kotlin.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>${junit.version}</version>
         </dependency>
     </dependencies>
 </project>
