@@ -23,7 +23,6 @@ import com.systemfreund.jsonapi.JsonApiObject.NumberValue
 import com.systemfreund.jsonapi.JsonApiObject.StringValue
 import com.systemfreund.jsonapi.JsonApiObject.TrueValue
 import com.systemfreund.jsonapi.JsonApiObject.Value
-import com.systemfreund.jsonapi.ResourceLinkage.EmptyToOneRelationship
 import com.systemfreund.jsonapi.ResourceLinkage.ToManyRelationship
 import com.systemfreund.jsonapi.ResourceLinkage.ToOneRelationship
 
@@ -107,7 +106,7 @@ class DataDeserializer : JsonDeserializer<Data>() {
 
 class ResourceLinkageDeserializer : JsonDeserializer<ResourceLinkage>() {
     override fun getNullValue(ctxt: DeserializationContext?): ResourceLinkage {
-        return EmptyToOneRelationship
+        return ToOneRelationship()
     }
 
     override fun deserialize(parser: JsonParser, context: DeserializationContext): ResourceLinkage {

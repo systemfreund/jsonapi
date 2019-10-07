@@ -26,7 +26,7 @@ data class Document(
         val jsonapi: JsonApiInfo? = null
 ) {
     companion object {
-        interface Data
+        interface Data : Iterable<ResourceObject>, Sequence<ResourceObject>
 
         data class ResourceObject(val id: String? = null,
                                   val type: String,
@@ -34,9 +34,15 @@ data class Document(
                                   val relationships: Relationships = emptyMap(),
                                   val links: Links? = null,
                                   val meta: Meta? = null
-        ) : Data
+        ) : Data {
+            val resourceIdentifier = id?.let { ResourceIdentifier(it, type, meta) }
 
-        data class ResourceObjects(val array: List<ResourceObject>) : Data
+            override fun iterator() = listOf(this).iterator()
+        }
+
+        data class ResourceObjects(val array: List<ResourceObject>) : Data {
+            override fun iterator() = array.iterator()
+        }
     }
 }
 
@@ -54,20 +60,15 @@ data class Relationship(val links: Links? = null,
 
                         val meta: Meta? = null)
 
-sealed class ResourceLinkage {
-    object EmptyToOneRelationship : ResourceLinkage() {
-        override val isEmpty = true
+sealed class ResourceLinkage : Iterable<ResourceIdentifier> {
+    data class ToOneRelationship(val id: ResourceIdentifier? = null) : ResourceLinkage() {
+        override fun iterator() = iterator { id?.let { yield(it) } }
     }
 
-    data class ToOneRelationship(val id: ResourceIdentifier) : ResourceLinkage() {
-        override val isEmpty = false
-    }
+    data class ToManyRelationship(val ids: List<ResourceIdentifier> = emptyList())
+        : ResourceLinkage(), Iterable<ResourceIdentifier> by ids
 
-    data class ToManyRelationship(val ids: List<ResourceIdentifier> = emptyList()) : ResourceLinkage() {
-        override val isEmpty = ids.isEmpty()
-    }
-
-    abstract val isEmpty: Boolean
+    fun isEmpty(): Boolean = iterator().hasNext()
 }
 
 data class Link(val href: String, val meta: Meta? = null)

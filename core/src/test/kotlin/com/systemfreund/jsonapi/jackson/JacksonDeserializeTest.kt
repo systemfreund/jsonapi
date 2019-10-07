@@ -19,7 +19,6 @@ import com.systemfreund.jsonapi.JsonApiObject.TrueValue
 import com.systemfreund.jsonapi.Link
 import com.systemfreund.jsonapi.Relationship
 import com.systemfreund.jsonapi.ResourceIdentifier
-import com.systemfreund.jsonapi.ResourceLinkage.EmptyToOneRelationship
 import com.systemfreund.jsonapi.ResourceLinkage.ToManyRelationship
 import com.systemfreund.jsonapi.ResourceLinkage.ToOneRelationship
 import org.junit.Test
@@ -528,7 +527,7 @@ class JacksonDeserializeTest {
                                 ResourceIdentifier("1", "model"),
                                 ResourceIdentifier("2", "model"))),
                         meta = mapOf("m1" to FalseValue)),
-                "with-empty-to-one-linkage" to Relationship(data = EmptyToOneRelationship),
+                "with-empty-to-one-linkage" to Relationship(data = ToOneRelationship()),
                 "with-empty-to-many-linkage" to Relationship(data = ToManyRelationship()),
                 "with-absent-linkage" to Relationship(data = null)
         ))))
