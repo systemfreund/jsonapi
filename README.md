@@ -1,4 +1,4 @@
-# JSON API
+# Untitled JSON API Test Library
 
 Work in progress library to make testing of JSON-API based APIs easier.
 
