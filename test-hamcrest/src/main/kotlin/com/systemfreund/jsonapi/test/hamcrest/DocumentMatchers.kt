@@ -42,7 +42,7 @@ object DocumentMatchers {
             }
 
             override fun describeTo(description: Description) {
-                description.appendText("document.data")
+                description.appendText("document.data ")
                 primaryDataMatcher.describeTo(description)
             }
         }
